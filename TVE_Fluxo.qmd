@@ -19,7 +19,7 @@ p(x|\xi, \sigma, \mu)\ = \
 $$
 
 
-Acredito que não seja interessante explicá-la detalhadamente, mas o relevante é vermos um exemplo de sua aplicação.
+Bonita, mas acredito que não seja interessante explicá-la detalhadamente, mas o relevante é vermos um exemplo de sua aplicação.
 
 ```{r include=FALSE}
 options(htmltools.dir.version = FALSE)
