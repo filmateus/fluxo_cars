@@ -1,0 +1,145 @@
+---
+title: "Valores extremos aplicado ao fluxo de veículos"
+format: html
+---
+
+A teoria dos valores extremos é um ramo da estatística que estuda a distribuição e a probabilidade de eventos raros ou extremos, como inundações, terremotos, furacões, etc. Essa teoria é útil para modelar e prever o comportamento de fenômenos que fogem da normalidade e que podem ter consequências graves ou catastróficas. Dessa forma, é necessário encontrar os valores mais altos de uma série ou de uma distribuição. Esses números são conhecidos como valores extremos.
+
+Essa teoria pode ser aplicada em muitas áreas. A mais comum é a área climática, para prever chuvas mais fortes ou temperaturas mais altas, entretanto, há exemplos aplicados ao esporte, à área financeira, e à demanda de serviços, entre outras.”
+
+
+A fórmula é essa:
+
+$$
+p(x|\xi, \sigma, \mu)\ = \
+\left\{ \begin{array}{rcl}
+\frac{1}{\sigma}(1 + \xi\frac{x - \mu}{\sigma})^{-\frac{1}{\xi}},\ \mbox{se}& \xi \neq 0\\
+\frac{1}{\sigma}\exp\left\{-\frac{(x - \mu)}{\sigma}\right\}, \ \mbox{se}& \xi = 0
+\end{array}\right.
+$$
+
+
+Acredito que não seja interessante explicá-la detalhadamente, mas o relevante é vermos um exemplo de sua aplicação.
+
+```{r include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  fig.width=9, fig.height=5, fig.retina=3,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+```
+
+```{r}
+library(tidyverse)
+library(POT)
+# setwd("D:/OneDrive/DEV/strans_fluxo/files")
+```
+
+obs.: Foi preciso criar um arquivo com a frequência, pois para trabalhar com todos arquivos, exigiria muito da máquina que utilizo. O código abaixo consiste no método utilizado para construir o arquivo com dados que foram utilizados.
+
+```{r}
+# csv_files <- list.files(path = "D:/OneDrive/DEV/strans_fluxo/files/", pattern = "T1113")
+
+# combined_df <- NULL
+
+# # 362 files
+# for (file in csv_files) {
+#   df <- read.csv(file, fileEncoding = "UTF-8")
+#   combined_df <- rbind(combined_df, df)
+# }
+
+# combined_df$DataHoraPassagem = lubridate::ymd_hms(combined_df$DataHoraPassagem)
+# combined_df$day = lubridate::date(combined_df$DataHoraPassagem)
+```
+
+```{r}
+# combined_df$day|>
+#   table()|>
+#   as.data.frame()|>
+#   write.csv("fluxo_day.csv")
+```
+
+# Aplicação ao fluxo de trânsito
+
+Nas cidades, a quantidade de veículos circulando diariamente influencia o funcionamento da cidade (e o humor das pessoas). Uma grande quantidade de veículos significa mais lentidão e maior risco de acidentes. Uma análise descritiva pode ajudar a entender a frequência de veículos nas ruas, mas em grandes quantidades, a situação pode ser apenas a ponta do iceberg para o caos.
+
+```{r}
+# loading the file
+fluxo_day = read.csv("fluxo_day.csv")
+```
+
+
+```{r}
+#chat
+fluxo_day|>
+ggplot2::ggplot()+
+ggplot2::aes(x = X, y = Freq)+
+ggplot2::geom_line()+
+ggthemes::theme_fivethirtyeight()
+```
+
+A teoria dos valores extremos pode ser aplicada para determinar em quais dias o fluxo de veículos foi muito intenso e qual valor esperar até determinado período. Para isso, o passo determinante é a escolha do limiar, ou seja, o valor em que a distribuição se torna uma distribuição de extremos. Esse processo é feito através de análises gráficas. 
+
+Após esse processo, podemos criar nosso modelo que explica os dados extremos.
+
+O limiar foi determinado no valor de 23.700 passagens de véiculo no ponto do radar. O que significa que 12,3% de todos os valores podem ser considerados extremos. 
+
+```{r}
+DfGrapif = data.frame(time = c(1:length(fluxo_day$Freq)),
+                      obs = fluxo_day$Freq)
+diplot(DfGrapif)
+abline(v = 23700)
+```
+
+O comando a seguir apresentar os valores dos parâmetros da função 
+
+```{r}
+ajuste = fitgpd(fluxo_day$Freq, 23700)
+ajuste
+```
+
+# Análise da qualidade do modelo 
+
+```{r}
+par(mfrow=c(1,2))
+pp(ajuste,main="PP, u=0.2");qq(ajuste,main="QQ, u=0.2")
+```
+
+# Fluxo esperado 
+
+Utilizando a formula $p = 1 - \frac{1}{t}$, podemos verificar o maior fluxo esperado para um período determinado na escala em uso. No caso em análise, dias. 
+O pacote possui funções que apresentam trabalham a formula e escolhemos calcular entre o intervalo de 10 a 60 dias
+
+O gráfico a seguir mostra o o valores esperados de acordo com os dias de intevalo e o intervalo de confiança. 
+
+```{r}
+retornos = retlev(ajuste,npy= ajuste$pat, xlab="dias", ylab="valor")
+```
+
+A tabela a seguir apresenta os valores esperados de acordo com uma sequencia que foi criada de 10 a 60 dias
+
+```{r}
+retornos = retlev(ajuste,npy= ajuste$pat, xlab="dias", ylab="valor")
+
+#create a sequence
+days = seq(10,60,5)
+fluxo_etv = c()
+
+for (i in days) {
+  result <- retornos(i)
+  fluxo_etv <- c(fluxo_etv, as.numeric(result))
+}
+
+data.frame(Dias = c(days),
+          Fluxo = c(fluxo_etv))|>
+          knitr::kable()
+```
+
+Os dados indicam que em 10 dias o maior valor extremo esperado é de 23.854 veículos. Ocorre um crescimento do valores devido pois a distância de tempos ocasiona um aumento do valor  e expanção do intervalo de confiança.
+
+É importante destacar que o valor do limiar pode ser determinado de forma abritária. No exemplo, utilizamos o valor calculado, mas poderiamos usar um valor específico. Esta situção depende da pesquisa e da busca dos resutaldo mais adequados a realidade.  
