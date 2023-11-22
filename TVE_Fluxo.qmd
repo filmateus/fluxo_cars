@@ -5,9 +5,10 @@ editor_options:
   chunk_output_type: console
 ---
 
-A teoria dos valores extremos é um ramo da estatística que estuda a distribuição e a probabilidade de eventos raros ou extremos, como inundações, terremotos, furacões, etc. Essa teoria é útil para modelar e prever o comportamento de fenômenos que fogem da normalidade e que podem ter consequências graves ou catastróficas. Dessa forma, é necessário encontrar os valores mais altos de uma série ou de uma distribuição. Esses números são conhecidos como valores extremos.
+A teoria dos valores extremos é um ramo da estatística que estuda a distribuição e a probabilidade de eventos raros ou extremos, entre eles, podemos citar como exemplo inundações, terremotos, furacões, etc. Essa teoria é útil para modelar e prever o comportamento de fenômenos que fogem da normalidade e que podem ter consequências graves ou catastróficas. O passo principal nesta consiste e  encontrar os valores mais altos de uma série ou de uma distribuição. Esses números são conhecidos como valores extremos.
 
 Essa teoria pode ser aplicada em muitas áreas. A mais comum é a área climática, para prever chuvas mais fortes ou temperaturas mais altas, entretanto, há exemplos aplicados ao esporte, à área financeira, e à demanda de serviços, entre outras."
+
 
 A fórmula é essa:
 
@@ -19,7 +20,7 @@ p(x|\xi, \sigma, \mu)\ = \
 \end{array}\right.
 $$
 
-Bonita, mas acredito que não seja interessante explicá-la detalhadamente, mas o relevante é vermos um exemplo de sua aplicação.
+Bonita, mas acredito que não seja interessante explicá-la detalhadamente, o relevante é vermos um exemplo de sua aplicação.
 
 ```{r include=FALSE}
 options(htmltools.dir.version = FALSE)
